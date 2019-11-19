@@ -1,11 +1,11 @@
 /*jslint node: true */
 'use strict';
-const constants = require('byteballcore/constants.js');
-const conf = require('byteballcore/conf');
-const db = require('byteballcore/db');
-const eventBus = require('byteballcore/event_bus');
-const validationUtils = require('byteballcore/validation_utils');
-const headlessWallet = require('headless-byteball');
+const constants = require('ocore/constants.js');
+const conf = require('ocore/conf');
+const db = require('ocore/db');
+const eventBus = require('ocore/event_bus');
+const validationUtils = require('ocore/validation_utils');
+const headlessWallet = require('headless-obyte');
 const request = require('request');
 const correspondents = require('./correspondents');
 
@@ -27,7 +27,7 @@ eventBus.once('headless_wallet_ready', () => {
 		});
 	});
 	eventBus.on('paired', (from_address, pairing_secret) => {
-		const device = require('byteballcore/device.js');
+		const device = require('ocore/device.js');
 		device.sendMessageToDevice(from_address, 'text', "Welcome to my new shiny bot!");
 	});
 	
@@ -35,7 +35,7 @@ eventBus.once('headless_wallet_ready', () => {
 		text = text.trim().toLowerCase();
 		if (!steps[from_address]) steps[from_address] = 'start';
 		let step = steps[from_address];
-		const device = require('byteballcore/device.js');
+		const device = require('ocore/device.js');
 		if (validationUtils.isValidAddress(text.toUpperCase())) {
 			assocDeviceAddressToAddress[from_address] = text.toUpperCase();
 			return device.sendMessageToDevice(from_address, 'text', 'I saved your address. Send me the name of the city');
@@ -100,7 +100,7 @@ eventBus.once('headless_wallet_ready', () => {
 });
 
 function createContract(myAddress, peerAddress, myAmount, peerAmount, peerDeviceAddress, name, operator, value, time, cb) {
-	const device = require('byteballcore/device');
+	const device = require('ocore/device');
 	let timeout = Date.now() + 10 * 60 * 1000;
 	let inverseOperator = operator === '>=' ? '<' : '>';
 	let arrSeenConditionPeer = ['seen', {
@@ -160,7 +160,7 @@ function createContract(myAddress, peerAddress, myAmount, peerAmount, peerDevice
 		}
 	};
 	
-	let walletDefinedByAddresses = require('byteballcore/wallet_defined_by_addresses.js');
+	let walletDefinedByAddresses = require('ocore/wallet_defined_by_addresses.js');
 	walletDefinedByAddresses.createNewSharedAddress(arrDefinition, assocSignersByPath, {
 		ifError: (err) => {
 			cb(err);
@@ -190,7 +190,7 @@ function createContract(myAddress, peerAddress, myAmount, peerAmount, peerDevice
 }
 
 function findOracleAndSendMessage(value, cb) {
-	const device = require('byteballcore/device');
+	const device = require('ocore/device');
 	correspondents.findCorrespondentByPairingCode(conf.oracle_pairing_code, (correspondent) => {
 		if (!correspondent) {
 			correspondents.addCorrespondent(conf.oracle_pairing_code, 'flight oracle', (err, device_address) => {
